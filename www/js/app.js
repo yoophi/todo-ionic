@@ -32,42 +32,45 @@ angular.module('starter', ['ionic', 'starter.controllers'])
     controller: 'AppCtrl'
   })
 
-  .state('app.search', {
-    url: '/search',
+  .state('app.todos', {
+    url: '/todos',
     views: {
       'menuContent': {
-        templateUrl: 'templates/search.html'
+        templateUrl: 'templates/todos.html',
+        controller: 'TodolistCtrl',
+        controllerAs: 'todos'
       }
     }
   })
 
-  .state('app.browse', {
-      url: '/browse',
+  .state('app.account', {
+      url: '/account',
       views: {
         'menuContent': {
-          templateUrl: 'templates/browse.html'
+          templateUrl: 'templates/account.html'
         }
       }
     })
-    .state('app.playlists', {
-      url: '/playlists',
+    .state('app.about', {
+      url: '/about',
       views: {
         'menuContent': {
-          templateUrl: 'templates/playlists.html',
-          controller: 'PlaylistsCtrl'
+          templateUrl: 'templates/about.html',
+          controller: 'AboutCtrl'
         }
       }
     })
 
-  .state('app.single', {
-    url: '/playlists/:playlistId',
+  .state('app.todo', {
+    url: '/todo/:todoId',
     views: {
       'menuContent': {
-        templateUrl: 'templates/playlist.html',
-        controller: 'PlaylistCtrl'
+        templateUrl: 'templates/todo.html',
+        controller: 'TodoCtrl',
+        controllerAs: 'todo'
       }
     }
   });
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/app/playlists');
+  $urlRouterProvider.otherwise('/app/about');
 });

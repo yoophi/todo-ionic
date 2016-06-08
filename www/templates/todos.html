@@ -1,0 +1,12 @@
+<ion-view view-title="Todos">
+  <ion-content>
+    <h1>Todos</h1>
+    <ion-list>
+      <ion-item
+        ng-repeat="todo in todos.todos"
+        ui-sref="app.todo({todoId: todo.id})">
+        {{ todo.title }}
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>
