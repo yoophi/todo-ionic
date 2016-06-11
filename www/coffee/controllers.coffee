@@ -1,7 +1,19 @@
-class AppCtrl
-  @$inject = ['$scope', '$ionicModal', '$timeout']
+class BaseController
+  @inject: (args...) ->
+    @$inject = args
 
-  constructor: (@$scope, @$ionicModal, @$timeout) ->
+  constructor: (args...) ->
+    for key, index in @constructor.$inject
+      this[key] = args[index]
+    @scope = @$scope if @$scope?
+
+    @initialize?.call(this)
+
+
+class AppCtrl extends BaseController
+  @inject '$scope', '$ionicModal', '$timeout'
+
+  initialize: ->
     # With the new view caching in Ionic, Controllers are only called
     # when they are recreated or on app start, instead of every page change.
     # To listen for when this page is active (for example, to refresh data),
@@ -41,20 +53,20 @@ class AppCtrl
     return
 
 
-class TodoCtrl
-  @$inject = ['$scope']
+class TodoCtrl extends BaseController
+  @inject '$scope'
 
-  constructor: (@$scope) ->
+  initialize: ->
     @todo =
       title: 'hello world'
       id: 1
     return
 
 
-class TodolistCtrl
-  @$inject = ['$scope']
+class TodolistCtrl extends BaseController
+  @inject '$scope'
 
-  constructor: (@$scope) ->
+  initialize: ->
     @todos = [
       {
         title: 'Reggae'
@@ -84,11 +96,8 @@ class TodolistCtrl
     return
 
 
-class AboutCtrl
-  @$inject = ['$scope', '$stateParams']
-
-  constructor: ($scope, $stateParams) ->
-    return
+class AboutCtrl extends BaseController
+  @inject '$scope', '$stateParams'
 
 
 angular.module('starter.controllers', [])
