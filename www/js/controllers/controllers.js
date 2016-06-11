@@ -1,4 +1,4 @@
-var AboutCtrl, AccountCtrl, AppCtrl, BaseController, TodoCtrl, TodolistCtrl,
+var AboutCtrl, AppCtrl, BaseController, TodoCtrl, TodolistCtrl,
   slice = [].slice,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -37,7 +37,7 @@ AppCtrl = (function(superClass) {
     return AppCtrl.__super__.constructor.apply(this, arguments);
   }
 
-  AppCtrl.inject('$scope', '$ionicModal', '$timeout', 'TodoApiService');
+  AppCtrl.inject('$scope', '$ionicModal', '$timeout');
 
   AppCtrl.prototype.initialize = function() {
     this.$scope.loginData = {};
@@ -68,10 +68,6 @@ AppCtrl = (function(superClass) {
     })(this);
   };
 
-  AppCtrl.prototype.login = function() {
-    return this.TodoApiService.login();
-  };
-
   return AppCtrl;
 
 })(BaseController);
@@ -83,16 +79,13 @@ TodoCtrl = (function(superClass) {
     return TodoCtrl.__super__.constructor.apply(this, arguments);
   }
 
-  TodoCtrl.inject('$scope', '$stateParams', 'TodoApiService');
+  TodoCtrl.inject('$scope');
 
   TodoCtrl.prototype.initialize = function() {
-    var todo_id;
-    todo_id = this.$stateParams.todoId;
-    this.TodoApiService.findTodo(todo_id).success((function(_this) {
-      return function(response) {
-        return _this.todo = response;
-      };
-    })(this));
+    this.todo = {
+      title: 'hello world',
+      id: 1
+    };
   };
 
   return TodoCtrl;
@@ -106,38 +99,33 @@ TodolistCtrl = (function(superClass) {
     return TodolistCtrl.__super__.constructor.apply(this, arguments);
   }
 
-  TodolistCtrl.inject('$scope', 'TodoApiService');
+  TodolistCtrl.inject('$scope');
 
   TodolistCtrl.prototype.initialize = function() {
-    return this.TodoApiService.findTodos().success((function(_this) {
-      return function(response) {
-        return _this.todos = response.todos;
-      };
-    })(this));
+    this.todos = [
+      {
+        title: 'Reggae',
+        id: 1
+      }, {
+        title: 'Chill',
+        id: 2
+      }, {
+        title: 'Dubstep',
+        id: 3
+      }, {
+        title: 'Indie',
+        id: 4
+      }, {
+        title: 'Rap',
+        id: 5
+      }, {
+        title: 'Cowbell',
+        id: 6
+      }
+    ];
   };
 
   return TodolistCtrl;
-
-})(BaseController);
-
-AccountCtrl = (function(superClass) {
-  extend(AccountCtrl, superClass);
-
-  function AccountCtrl() {
-    return AccountCtrl.__super__.constructor.apply(this, arguments);
-  }
-
-  AccountCtrl.inject('$scope', 'TodoApiService');
-
-  AccountCtrl.prototype.initialize = function() {
-    return this.TodoApiService.findCurrentUser().success((function(_this) {
-      return function(response) {
-        return _this.user = response;
-      };
-    })(this));
-  };
-
-  return AccountCtrl;
 
 })(BaseController);
 
@@ -154,4 +142,4 @@ AboutCtrl = (function(superClass) {
 
 })(BaseController);
 
-angular.module('starter.controllers', []).controller('AppCtrl', AppCtrl).controller('TodolistCtrl', TodolistCtrl).controller('TodoCtrl', TodoCtrl).controller('AccountCtrl', AccountCtrl).controller('AboutCtrl', AboutCtrl);
+angular.module('starter.controllers', []).controller('AppCtrl', AppCtrl).controller('TodolistCtrl', TodolistCtrl).controller('TodoCtrl', TodoCtrl).controller('AboutCtrl', AboutCtrl);

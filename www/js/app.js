@@ -1,4 +1,4 @@
-angular.module('starter', ['ionic', 'starter.controllers']).run(function($ionicPlatform) {
+angular.module('starter', ['ionic', 'starter.controllers', 'LocalStorageModule', 'http-auth-interceptor']).run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
     if (window.cordova && window.cordova.plugins.Keyboard) {
       cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
@@ -13,7 +13,8 @@ angular.module('starter', ['ionic', 'starter.controllers']).run(function($ionicP
     url: '/app',
     abstract: true,
     templateUrl: 'templates/menu.html',
-    controller: 'AppCtrl'
+    controller: 'AppCtrl',
+    controllerAs: 'app'
   }).state('app.todos', {
     url: '/todos',
     views: {
@@ -27,7 +28,9 @@ angular.module('starter', ['ionic', 'starter.controllers']).run(function($ionicP
     url: '/account',
     views: {
       'menuContent': {
-        templateUrl: 'templates/account.html'
+        templateUrl: 'templates/account.html',
+        controller: 'AccountCtrl',
+        controllerAs: 'account'
       }
     }
   }).state('app.about', {
@@ -49,4 +52,6 @@ angular.module('starter', ['ionic', 'starter.controllers']).run(function($ionicP
     }
   });
   $urlRouterProvider.otherwise('/app/about');
+}).config(function($httpProvider) {
+  return $httpProvider.interceptors.push('TodoApiInterceptor');
 });

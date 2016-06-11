@@ -11,7 +11,7 @@ class BaseController
 
 
 class AppCtrl extends BaseController
-  @inject '$scope', '$ionicModal', '$timeout'
+  @inject '$scope', '$ionicModal', '$timeout', 'TodoApiService'
 
   initialize: ->
     # With the new view caching in Ionic, Controllers are only called
@@ -52,48 +52,42 @@ class AppCtrl extends BaseController
 
     return
 
+  login: ->
+#    alert 'login()'
+    @TodoApiService.login()
 
 class TodoCtrl extends BaseController
-  @inject '$scope'
+  @inject '$scope', '$stateParams', 'TodoApiService'
 
   initialize: ->
-    @todo =
-      title: 'hello world'
-      id: 1
+    todo_id = @$stateParams.todoId
+
+    @TodoApiService.findTodo(todo_id).success((response) =>
+      @todo = response
+    )
+
+#    @todo =
+#      title: 'hello world'
+#      id: 1
     return
 
 
 class TodolistCtrl extends BaseController
-  @inject '$scope'
+  @inject '$scope', 'TodoApiService'
 
   initialize: ->
-    @todos = [
-      {
-        title: 'Reggae'
-        id: 1
-      }
-      {
-        title: 'Chill'
-        id: 2
-      }
-      {
-        title: 'Dubstep'
-        id: 3
-      }
-      {
-        title: 'Indie'
-        id: 4
-      }
-      {
-        title: 'Rap'
-        id: 5
-      }
-      {
-        title: 'Cowbell'
-        id: 6
-      }
-    ]
-    return
+    @TodoApiService.findTodos().success((response) =>
+      @todos = response.todos
+    )
+
+
+class AccountCtrl extends BaseController
+  @inject '$scope', 'TodoApiService'
+
+  initialize: ->
+    @TodoApiService.findCurrentUser().success((response) =>
+      @user = response
+    )
 
 
 class AboutCtrl extends BaseController
@@ -104,4 +98,5 @@ angular.module('starter.controllers', [])
 .controller 'AppCtrl', AppCtrl
 .controller 'TodolistCtrl', TodolistCtrl
 .controller 'TodoCtrl', TodoCtrl
+.controller 'AccountCtrl', AccountCtrl
 .controller 'AboutCtrl', AboutCtrl

@@ -6,6 +6,8 @@
 angular.module('starter', [
   'ionic'
   'starter.controllers'
+  'LocalStorageModule'
+  'http-auth-interceptor'
 ]).run(($ionicPlatform) ->
   $ionicPlatform.ready ->
     # Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -18,13 +20,14 @@ angular.module('starter', [
       StatusBar.styleDefault()
     return
   return
-).config ($stateProvider, $urlRouterProvider) ->
+).config(($stateProvider, $urlRouterProvider) ->
   $stateProvider
   .state('app',
     url: '/app'
     abstract: true
     templateUrl: 'templates/menu.html'
-    controller: 'AppCtrl')
+    controller: 'AppCtrl'
+    controllerAs: 'app')
   .state('app.todos',
     url: '/todos'
     views: 'menuContent':
@@ -33,8 +36,10 @@ angular.module('starter', [
       controllerAs: 'todos')
   .state('app.account',
     url: '/account'
-    views: 'menuContent': 
-      templateUrl: 'templates/account.html')
+    views: 'menuContent':
+      templateUrl: 'templates/account.html'
+      controller: 'AccountCtrl'
+      controllerAs: 'account')
   .state('app.about',
     url: '/about'
     views: 'menuContent':
@@ -49,3 +54,9 @@ angular.module('starter', [
   # if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise '/app/about'
   return
+)
+.config(($httpProvider) ->
+  $httpProvider.interceptors.push 'TodoApiInterceptor'
+)
+
+
