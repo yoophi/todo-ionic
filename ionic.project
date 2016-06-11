@@ -1,4 +1,10 @@
 {
   "name": "todo-ionic",
-  "app_id": ""
+  "app_id": "",
+  "proxies": [
+    {
+      "path": "/todo/api",
+      "proxyUrl": "http://todo.yoophi.com/api/v1.0"
+    }
+  ]
 }
