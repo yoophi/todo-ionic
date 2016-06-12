@@ -82,12 +82,36 @@ class TodoCtrl extends BaseController
 
 
 class TodolistCtrl extends BaseController
-  @inject '$scope', 'TodoApiService'
+  @inject '$scope', '$q', '$ionicModal', 'TodoApiService'
 
   initialize: ->
+    @getTodos()
+
+    @$ionicModal.fromTemplateUrl('templates/modals/add-todo.html', scope: @$scope).then (modal) =>
+      @$scope.modalAddTodo = modal
+      @$scope.hideModalAddTodo = @hideModalAddTodo
+      return
+
+    @$scope.addTodo = (todo) =>
+      @TodoApiService.add(todo).then(=>
+        @$scope.modalAddTodo.hide()
+        @getTodos()
+      )
+
+  getTodos: ->
+    deferred = @$q.defer()
     @TodoApiService.findTodos().success((response) =>
       @todos = response.todos
+      deferred.resolve response.todos
     )
+
+    return deferred.promise
+
+  showModalAddTodo: ->
+    @$scope.modalAddTodo.show()
+
+  hideModalAddTodo: =>
+    @$scope.modalAddTodo.hide()
 
 
 class AccountCtrl extends BaseController

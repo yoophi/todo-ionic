@@ -122,4 +122,12 @@ class TodoApiService extends BaseService
     )
     promise
 
+  add: (todo) ->
+    promise = @$http.post(@API_ENDPOINT + "/todos", todo).error((data, status) ->
+      console.log 'findCurrentUser returned status:' + status
+      return
+    )
+    promise
+
+
 angular.module('starter').service 'TodoApiService', TodoApiService

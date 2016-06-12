@@ -1,0 +1,9 @@
+<ion-modal-view>
+  <ion-header-bar>
+    <h1 class="title">Add Todo</h1>
+    <button class="button button-clear button-dark" ng-click="hideModalAddTodo()">Cancel</button>
+  </ion-header-bar>
+  <ion-content>
+    <add-todo-form on-submit="addTodo(todo)"></add-todo-form>
+  </ion-content>
+</ion-modal-view>

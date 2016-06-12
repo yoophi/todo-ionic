@@ -162,6 +162,14 @@ TodoApiService = (function(superClass) {
     return promise;
   };
 
+  TodoApiService.prototype.add = function(todo) {
+    var promise;
+    promise = this.$http.post(this.API_ENDPOINT + "/todos", todo).error(function(data, status) {
+      console.log('findCurrentUser returned status:' + status);
+    });
+    return promise;
+  };
+
   return TodoApiService;
 
 })(BaseService);

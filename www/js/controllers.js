@@ -1,7 +1,8 @@
 var AboutCtrl, AccountCtrl, AppCtrl, BaseController, TodoCtrl, TodolistCtrl,
   slice = [].slice,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty;
+  hasProp = {}.hasOwnProperty,
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 BaseController = (function() {
   BaseController.inject = function() {
@@ -115,17 +116,50 @@ TodolistCtrl = (function(superClass) {
   extend(TodolistCtrl, superClass);
 
   function TodolistCtrl() {
+    this.hideModalAddTodo = bind(this.hideModalAddTodo, this);
     return TodolistCtrl.__super__.constructor.apply(this, arguments);
   }
 
-  TodolistCtrl.inject('$scope', 'TodoApiService');
+  TodolistCtrl.inject('$scope', '$q', '$ionicModal', 'TodoApiService');
 
   TodolistCtrl.prototype.initialize = function() {
-    return this.TodoApiService.findTodos().success((function(_this) {
-      return function(response) {
-        return _this.todos = response.todos;
+    this.getTodos();
+    this.$ionicModal.fromTemplateUrl('templates/modals/add-todo.html', {
+      scope: this.$scope
+    }).then((function(_this) {
+      return function(modal) {
+        _this.$scope.modalAddTodo = modal;
+        _this.$scope.hideModalAddTodo = _this.hideModalAddTodo;
       };
     })(this));
+    return this.$scope.addTodo = (function(_this) {
+      return function(todo) {
+        return _this.TodoApiService.add(todo).then(function() {
+          _this.$scope.modalAddTodo.hide();
+          return _this.getTodos();
+        });
+      };
+    })(this);
+  };
+
+  TodolistCtrl.prototype.getTodos = function() {
+    var deferred;
+    deferred = this.$q.defer();
+    this.TodoApiService.findTodos().success((function(_this) {
+      return function(response) {
+        _this.todos = response.todos;
+        return deferred.resolve(response.todos);
+      };
+    })(this));
+    return deferred.promise;
+  };
+
+  TodolistCtrl.prototype.showModalAddTodo = function() {
+    return this.$scope.modalAddTodo.show();
+  };
+
+  TodolistCtrl.prototype.hideModalAddTodo = function() {
+    return this.$scope.modalAddTodo.hide();
   };
 
   return TodolistCtrl;

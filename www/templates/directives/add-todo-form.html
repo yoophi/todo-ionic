@@ -1,0 +1,13 @@
+<form name="formAddTodo" no-validate>
+  <label class="item item-input item-stacked-label"
+         ng-class="{ 'item-error': formAddTodo.$attempt && formAddTodo.priority.$invalid, 'item-valid': formAddTodo.priority.$valid }">
+    <span class="input-label">Priority</span>
+    <input type="text" name="priority" ng-model="todo.proiority" placeholder="1" required="required">
+  </label>
+  <label class="item item-input item-stacked-label"
+         ng-class="{ 'item-error': formAddTodo.$attempt && formAddTodo.title.$invalid, 'item-valid': formAddTodo.title.$valid }">
+    <span class="input-label">Title</span>
+    <input type="text" name="title" ng-model="todo.title" placeholder="title" required="required">
+  </label>
+  <button class="button button-full button-positive" type="button" ng-click="submit()">Add</button>
+</form>
