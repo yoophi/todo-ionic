@@ -11,7 +11,7 @@ class BaseController
 
 
 class AppCtrl extends BaseController
-  @inject '$scope', '$ionicModal', '$timeout', 'TodoApiService'
+  @inject '$scope', '$ionicHistory', '$state', '$ionicModal', '$timeout', 'TodoApiService'
 
   initialize: ->
     # With the new view caching in Ionic, Controllers are only called
@@ -55,6 +55,15 @@ class AppCtrl extends BaseController
   login: ->
 #    alert 'login()'
     @TodoApiService.login()
+
+  logout: ->
+    @TodoApiService.logout()
+    @$ionicHistory.nextViewOptions disableBack: true
+    @$state.go 'app.about'
+
+  isLoggedIn: ->
+    @TodoApiService.isLoggedIn()
+
 
 class TodoCtrl extends BaseController
   @inject '$scope', '$stateParams', 'TodoApiService'

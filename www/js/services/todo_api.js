@@ -88,7 +88,7 @@ TodoApiService = (function(superClass) {
         return function(event) {
           var accessToken;
           console.log('event.url', event.url);
-          if (event.url.indexOf(AUTH_REDIRECT_URL) === 0) {
+          if (event.url.indexOf(_this.AUTH_REDIRECT_URL) === 0) {
             accessToken = _this.getVariableFromHash(event.url, 'access_token');
             console.log('accessToken: ' + accessToken);
             _this.localStorageService.set('accessToken', accessToken);
@@ -123,6 +123,10 @@ TodoApiService = (function(superClass) {
       })(this);
       promise = this.$interval(loginPoller, intervalDelay, timesToRepeat, false);
     }
+  };
+
+  TodoApiService.prototype.logout = function() {
+    return this.localStorageService.remove('accessToken');
   };
 
   TodoApiService.prototype.getAccessToken = function() {

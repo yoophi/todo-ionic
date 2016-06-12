@@ -55,7 +55,7 @@ class TodoApiService extends BaseService
       console.log '>> adding EventListener loadstart'
       @loginWindow.addEventListener 'loadstart', (event) =>
         console.log 'event.url', event.url
-        if event.url.indexOf(AUTH_REDIRECT_URL) == 0
+        if event.url.indexOf(@AUTH_REDIRECT_URL) == 0
           accessToken = @getVariableFromHash event.url, 'access_token'
           console.log 'accessToken: ' + accessToken
           @localStorageService.set 'accessToken', accessToken
@@ -87,6 +87,10 @@ class TodoApiService extends BaseService
 
       promise = @$interval loginPoller, intervalDelay, timesToRepeat, false
     return
+
+
+  logout: ->
+    @localStorageService.remove 'accessToken'
 
   getAccessToken: ->
     @localStorageService.get 'accessToken'

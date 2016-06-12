@@ -37,7 +37,7 @@ AppCtrl = (function(superClass) {
     return AppCtrl.__super__.constructor.apply(this, arguments);
   }
 
-  AppCtrl.inject('$scope', '$ionicModal', '$timeout', 'TodoApiService');
+  AppCtrl.inject('$scope', '$ionicHistory', '$state', '$ionicModal', '$timeout', 'TodoApiService');
 
   AppCtrl.prototype.initialize = function() {
     this.$scope.loginData = {};
@@ -70,6 +70,18 @@ AppCtrl = (function(superClass) {
 
   AppCtrl.prototype.login = function() {
     return this.TodoApiService.login();
+  };
+
+  AppCtrl.prototype.logout = function() {
+    this.TodoApiService.logout();
+    this.$ionicHistory.nextViewOptions({
+      disableBack: true
+    });
+    return this.$state.go('app.about');
+  };
+
+  AppCtrl.prototype.isLoggedIn = function() {
+    return this.TodoApiService.isLoggedIn();
   };
 
   return AppCtrl;

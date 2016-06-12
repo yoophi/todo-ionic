@@ -20,6 +20,13 @@ angular.module('starter', [
       StatusBar.styleDefault()
     return
   return
+).run(['$rootScope', '$state', 'TodoApiService',
+  ($rootScope, $state, TodoApiService) ->
+    $rootScope.$on '$stateChangeStart', (event, toState, toParams) ->
+      if toState.authenticate and !TodoApiService.isLoggedIn()
+        event.preventDefault()
+        TodoApiService.login()
+]
 ).config(($stateProvider, $urlRouterProvider) ->
   $stateProvider
   .state('app',
@@ -27,30 +34,39 @@ angular.module('starter', [
     abstract: true
     templateUrl: 'templates/menu.html'
     controller: 'AppCtrl'
-    controllerAs: 'app')
+    controllerAs: 'app'
+  )
   .state('app.todos',
     url: '/todos'
+    authenticate: true
     views: 'menuContent':
       templateUrl: 'templates/todos.html'
       controller: 'TodolistCtrl'
-      controllerAs: 'todos')
+      controllerAs: 'todos'
+  )
   .state('app.account',
     url: '/account'
+    authenticate: true
     views: 'menuContent':
       templateUrl: 'templates/account.html'
       controller: 'AccountCtrl'
-      controllerAs: 'account')
+      controllerAs: 'account'
+  )
   .state('app.about',
     url: '/about'
     views: 'menuContent':
       templateUrl: 'templates/about.html'
-      controller: 'AboutCtrl')
-  .state 'app.todo',
+      controller: 'AboutCtrl'
+  )
+  .state('app.todo',
     url: '/todo/:todoId'
+    authenticate: true
     views: 'menuContent':
       templateUrl: 'templates/todo.html'
       controller: 'TodoCtrl'
       controllerAs: 'todo'
+  )
+
   # if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise '/app/about'
   return
@@ -58,5 +74,4 @@ angular.module('starter', [
 .config(($httpProvider) ->
   $httpProvider.interceptors.push 'TodoApiInterceptor'
 )
-
 
