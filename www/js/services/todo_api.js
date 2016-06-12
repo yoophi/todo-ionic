@@ -165,7 +165,25 @@ TodoApiService = (function(superClass) {
   TodoApiService.prototype.add = function(todo) {
     var promise;
     promise = this.$http.post(this.API_ENDPOINT + "/todos", todo).error(function(data, status) {
-      console.log('findCurrentUser returned status:' + status);
+      console.log('add returned status:' + status);
+    });
+    return promise;
+  };
+
+  TodoApiService.prototype.done = function(todo_id) {
+    var promise;
+    promise = this.$http.put(this.API_ENDPOINT + ("/todo/" + todo_id), {
+      is_completed: true
+    }).error(function(data, status) {
+      console.log('done returned status:' + status);
+    });
+    return promise;
+  };
+
+  TodoApiService.prototype.remove = function(todo_id) {
+    var promise;
+    promise = this.$http["delete"](this.API_ENDPOINT + ("/todo/" + todo_id), {}).error(function(data, status) {
+      console.log('done returned status:' + status);
     });
     return promise;
   };

@@ -113,6 +113,18 @@ class TodolistCtrl extends BaseController
   hideModalAddTodo: =>
     @$scope.modalAddTodo.hide()
 
+  done: (todo_id) =>
+    @TodoApiService.done(todo_id).then(=>
+      console.log "TodoApiService callback"
+      @getTodos()
+    )
+
+  remove: (todo_id) ->
+    @TodoApiService.remove(todo_id).then(=>
+      console.log "TodoApiService callback"
+      @getTodos()
+    )
+
 
 class AccountCtrl extends BaseController
   @inject '$scope', 'TodoApiService'

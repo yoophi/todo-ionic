@@ -11,9 +11,19 @@
     <h1>Todos</h1>
     <ion-list>
       <ion-item
+        class="item-remove-animate item-avatar item-icon-right"
+        type="item-text-wrap"
         ng-repeat="todo in todos.todos"
         ui-sref="app.todo({todoId: todo.id})">
-        {{ todo.title }}
+
+        <p ng-style="todo.is_completed && { 'text-decoration': 'line-through'}">{{ todo.title }}</p>
+        <i class="icon ion-chevron-right icon-accessory"></i>
+        <ion-option-button class="button-balanced" ng-click="todos.done(todo.id)">
+          Done
+        </ion-option-button>
+        <ion-option-button class="button-assertive" ng-click="todos.remove(todo.id)">
+          Delete
+        </ion-option-button>
       </ion-item>
     </ion-list>
   </ion-content>

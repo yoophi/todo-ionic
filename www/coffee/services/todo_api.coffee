@@ -124,7 +124,21 @@ class TodoApiService extends BaseService
 
   add: (todo) ->
     promise = @$http.post(@API_ENDPOINT + "/todos", todo).error((data, status) ->
-      console.log 'findCurrentUser returned status:' + status
+      console.log 'add returned status:' + status
+      return
+    )
+    promise
+
+  done: (todo_id) ->
+    promise = @$http.put(@API_ENDPOINT + "/todo/#{todo_id}", {is_completed: true}).error((data, status) ->
+      console.log 'done returned status:' + status
+      return
+    )
+    promise
+
+  remove: (todo_id) ->
+    promise = @$http.delete(@API_ENDPOINT + "/todo/#{todo_id}", {}).error((data, status) ->
+      console.log 'done returned status:' + status
       return
     )
     promise

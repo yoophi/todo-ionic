@@ -116,6 +116,7 @@ TodolistCtrl = (function(superClass) {
   extend(TodolistCtrl, superClass);
 
   function TodolistCtrl() {
+    this.done = bind(this.done, this);
     this.hideModalAddTodo = bind(this.hideModalAddTodo, this);
     return TodolistCtrl.__super__.constructor.apply(this, arguments);
   }
@@ -160,6 +161,24 @@ TodolistCtrl = (function(superClass) {
 
   TodolistCtrl.prototype.hideModalAddTodo = function() {
     return this.$scope.modalAddTodo.hide();
+  };
+
+  TodolistCtrl.prototype.done = function(todo_id) {
+    return this.TodoApiService.done(todo_id).then((function(_this) {
+      return function() {
+        console.log("TodoApiService callback");
+        return _this.getTodos();
+      };
+    })(this));
+  };
+
+  TodolistCtrl.prototype.remove = function(todo_id) {
+    return this.TodoApiService.remove(todo_id).then((function(_this) {
+      return function() {
+        console.log("TodoApiService callback");
+        return _this.getTodos();
+      };
+    })(this));
   };
 
   return TodolistCtrl;
