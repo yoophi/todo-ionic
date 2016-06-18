@@ -13,7 +13,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'LocalStorageModule',
     return $rootScope.$on('$stateChangeStart', function(event, toState, toParams) {
       if (toState.authenticate && !TodoApiService.isLoggedIn()) {
         event.preventDefault();
-        return TodoApiService.login();
+        return $rootScope.$broadcast('showLoginModal');
       }
     });
   }

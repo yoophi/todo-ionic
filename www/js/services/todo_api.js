@@ -40,14 +40,14 @@ TodoApiService = (function(superClass) {
     return TodoApiService.__super__.constructor.apply(this, arguments);
   }
 
-  TodoApiService.inject('$http', '$interval', 'localStorageService', 'authService');
+  TodoApiService.inject('$http', '$interval', '$httpParamSerializer', '$q', 'localStorageService', 'authService');
 
   loginWindow = null;
 
   TodoApiService.prototype.initialize = function() {
     this.API_ENDPOINT = ionic.Platform.isWebView() ? 'http://todo.yoophi.com/api/v1.0' : '/todo/api';
     this.CLIENT_ID = 'ionic';
-    this.AUTH_URL = 'http://todo.yoophi.com/api/v1.0/oauth/authorize';
+    this.AUTH_URL = 'http://todo.yoophi.com/api/v1.0/oauth/token';
     this.AUTH_REDIRECT_URL = 'http://localhost:8100/callback.html';
     return this.LOGOUT_URL = 'https://instagram.com/accounts/logout';
   };
@@ -70,59 +70,47 @@ TodoApiService = (function(superClass) {
     }
   };
 
-  TodoApiService.prototype.login = function() {
-    var LOGIN_URL, configUpdater, intervalCount, intervalDelay, loginPoller, promise, timesToRepeat;
-    LOGIN_URL = this.AUTH_URL + "?client_id=" + this.CLIENT_ID + "&scope=email&response_type=token&redirect_uri=" + (encodeURIComponent(this.AUTH_REDIRECT_URL));
-    this.loginWindow = window.open(LOGIN_URL, '_blank', 'width=400,height=250,location=no,clearsessioncache=yes,clearcache=yes');
-    configUpdater = (function(_this) {
-      return function(config) {
-        config.params = config.params || {};
-        config.params.access_token = _this.getAccessToken();
-        return config;
+  TodoApiService.prototype.login = function(username, password) {
+    var LOGIN_URL, params, promise, req;
+    LOGIN_URL = this.API_ENDPOINT + '/oauth/token';
+    params = {
+      grant_type: 'password',
+      client_id: 'ionic',
+      client_secret: 'secret',
+      scope: 'email',
+      username: username,
+      password: password
+    };
+    req = {
+      method: 'POST',
+      url: LOGIN_URL,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      data: this.$httpParamSerializer(params)
+    };
+    promise = this.$http(req).success((function(_this) {
+      return function(response) {
+        var configUpdater, deferred;
+        deferred = _this.$q.defer();
+        if (response.access_token != null) {
+          configUpdater = function(config) {
+            config.params = config.params || {};
+            config.params.access_token = response.access_token;
+            return config;
+          };
+          _this.localStorageService.set('accessToken', response.access_token);
+          _this.authService.loginConfirmed(null, configUpdater);
+          deferred.resolve(true);
+        }
+        return {
+          "else": deferred.reject('login failed')
+        };
       };
-    })(this);
-    console.log('ionic.Platform.isWebView()', ionic.Platform.isWebView());
-    if (ionic.Platform.isWebView()) {
-      console.log('>> adding EventListener loadstart');
-      this.loginWindow.addEventListener('loadstart', (function(_this) {
-        return function(event) {
-          var accessToken;
-          console.log('event.url', event.url);
-          if (event.url.indexOf(_this.AUTH_REDIRECT_URL) === 0) {
-            accessToken = _this.getVariableFromHash(event.url, 'access_token');
-            console.log('accessToken: ' + accessToken);
-            _this.localStorageService.set('accessToken', accessToken);
-            _this.loginWindow.close();
-            if (_this.isLoggedIn()) {
-              _this.authService.loginConfirmed(null, configUpdater);
-            }
-          }
-        };
-      })(this));
-      console.log('<< adding EventListener loadstart');
-    } else {
-      intervalCount = 0;
-      timesToRepeat = 100;
-      intervalDelay = 3000;
-      loginPoller = (function(_this) {
-        return function() {
-          intervalCount++;
-          if (_this.isLoggedIn()) {
-            console.log('user is logged in now');
-            _this.$interval.cancel(promise);
-            _this.authService.loginConfirmed(null, configUpdater);
-          } else {
-            console.log('user not logged in yet, we wont wait forever.  Intervals left:', timesToRepeat - intervalCount);
-            if (intervalCount >= timesToRepeat) {
-              _this.$interval.cancel(promise);
-              console.log('Since this is a hack for running the app in the browser, we are now giving up on you logging in.');
-              _this.loginWindow.close();
-            }
-          }
-        };
-      })(this);
-      promise = this.$interval(loginPoller, intervalDelay, timesToRepeat, false);
-    }
+    })(this)).error(function(data, status) {
+      console.log('add returned status:' + status);
+    });
+    return promise;
   };
 
   TodoApiService.prototype.logout = function() {

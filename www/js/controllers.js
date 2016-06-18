@@ -12,7 +12,7 @@ BaseController = (function() {
   };
 
   function BaseController() {
-    var args, i, index, key, len, ref, ref1;
+    var args, fn, fn1, i, index, key, len, ref, ref1, ref2;
     args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
     ref = this.constructor.$inject;
     for (index = i = 0, len = ref.length; i < len; index = ++i) {
@@ -22,8 +22,33 @@ BaseController = (function() {
     if (this.$scope != null) {
       this.scope = this.$scope;
     }
-    if ((ref1 = this.initialize) != null) {
-      ref1.call(this);
+    ref1 = this.constructor.prototype;
+    fn1 = (function(_this) {
+      return function(key) {
+        if (typeof fn === 'function') {
+          fn = (typeof fn.bind === "function" ? fn.bind(_this) : void 0) || _.bind(fn, _this);
+        }
+        Object.defineProperty(_this, key, {
+          get: function() {
+            return this.scope[key];
+          },
+          set: function(v) {
+            return this.scope[key] = v;
+          }
+        });
+        return _this.scope[key] = fn;
+      };
+    })(this);
+    for (key in ref1) {
+      fn = ref1[key];
+      console.log(key);
+      if ((key === 'constructor' || key === 'initialize') || key[0] === '_') {
+        continue;
+      }
+      fn1(key);
+    }
+    if ((ref2 = this.initialize) != null) {
+      ref2.call(this);
     }
   }
 
@@ -38,7 +63,7 @@ AppCtrl = (function(superClass) {
     return AppCtrl.__super__.constructor.apply(this, arguments);
   }
 
-  AppCtrl.inject('$scope', '$ionicHistory', '$state', '$ionicModal', '$timeout', 'TodoApiService');
+  AppCtrl.inject('$scope', '$rootScope', '$ionicHistory', '$state', '$ionicModal', '$timeout', 'TodoApiService');
 
   AppCtrl.prototype.initialize = function() {
     this.$scope.loginData = {};
@@ -49,40 +74,43 @@ AppCtrl = (function(superClass) {
         _this.$scope.modal = modal;
       };
     })(this));
-    this.$scope.closeLogin = (function(_this) {
+    this.$rootScope.$on('showLoginModal', (function(_this) {
       return function() {
-        _this.$scope.modal.hide();
+        return _this.login();
       };
-    })(this);
-    this.$scope.login = (function(_this) {
-      return function() {
-        _this.$scope.modal.show();
-      };
-    })(this);
-    this.$scope.doLogin = (function(_this) {
-      return function() {
-        console.log('Doing login', _this.$scope.loginData);
-        _this.$timeout((function() {
-          _this.$scope.closeLogin();
-        }), 1000);
-      };
-    })(this);
+    })(this));
+  };
+
+  AppCtrl.prototype.closeLogin = function() {
+    this.$scope.modal.hide();
   };
 
   AppCtrl.prototype.login = function() {
-    return this.TodoApiService.login();
+    this.$scope.modal.show();
   };
 
-  AppCtrl.prototype.logout = function() {
-    this.TodoApiService.logout();
-    this.$ionicHistory.nextViewOptions({
-      disableBack: true
+  AppCtrl.prototype.doLogin = function() {
+    var password, username;
+    username = this.$scope.loginData.username;
+    password = this.$scope.loginData.password;
+    this.TodoApiService.login(username, password).success((function(_this) {
+      return function(response) {
+        console.log('callback', response);
+        return _this.$timeout((function() {
+          _this.$scope.closeLogin();
+        }), 1000);
+      };
+    })(this)).error(function(result) {
+      return alert(result);
     });
-    return this.$state.go('app.about');
   };
 
   AppCtrl.prototype.isLoggedIn = function() {
     return this.TodoApiService.isLoggedIn();
+  };
+
+  AppCtrl.prototype.logout = function() {
+    return this.TodoApiService.logout();
   };
 
   return AppCtrl;

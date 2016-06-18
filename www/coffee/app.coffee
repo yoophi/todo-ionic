@@ -25,7 +25,7 @@ angular.module('starter', [
     $rootScope.$on '$stateChangeStart', (event, toState, toParams) ->
       if toState.authenticate and !TodoApiService.isLoggedIn()
         event.preventDefault()
-        TodoApiService.login()
+        $rootScope.$broadcast('showLoginModal')
 ]
 ).config(($stateProvider, $urlRouterProvider) ->
   $stateProvider

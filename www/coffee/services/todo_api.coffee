@@ -12,14 +12,14 @@ class BaseService
     @initialize?.call(this)
 
 class TodoApiService extends BaseService
-  @inject '$http', '$interval', 'localStorageService', 'authService'
+  @inject '$http', '$interval', '$httpParamSerializer', '$q', 'localStorageService', 'authService'
 
   loginWindow = null
 
   initialize: ->
     @API_ENDPOINT = if ionic.Platform.isWebView() then 'http://todo.yoophi.com/api/v1.0' else '/todo/api'
     @CLIENT_ID = 'ionic'
-    @AUTH_URL = 'http://todo.yoophi.com/api/v1.0/oauth/authorize'
+    @AUTH_URL = 'http://todo.yoophi.com/api/v1.0/oauth/token'
     @AUTH_REDIRECT_URL = 'http://localhost:8100/callback.html'
     @LOGOUT_URL = 'https://instagram.com/accounts/logout'
 
@@ -38,56 +38,43 @@ class TodoApiService extends BaseService
 
     return
 
-  login: ->
-    LOGIN_URL = "#{@AUTH_URL}?client_id=#{@CLIENT_ID}&scope=email&response_type=token&redirect_uri=#{encodeURIComponent(@AUTH_REDIRECT_URL)}"
-    @loginWindow = window.open LOGIN_URL, '_blank', 'width=400,height=250,location=no,clearsessioncache=yes,clearcache=yes'
+  login: (username, password) ->
+    LOGIN_URL = @API_ENDPOINT + '/oauth/token'
+    params =
+      grant_type: 'password'
+      client_id: 'ionic'
+      client_secret: 'secret'
+      scope: 'email'
+      username: username
+      password: password
 
-    configUpdater = (config) =>
-      config.params = config.params or {}
-      config.params.access_token = @getAccessToken()
-      # jshint ignore:line
-      config
+    req =
+      method: 'POST'
+      url: LOGIN_URL
+      headers: 'Content-Type': 'application/x-www-form-urlencoded'
+      data: @$httpParamSerializer(params)
 
-    console.log 'ionic.Platform.isWebView()', ionic.Platform.isWebView()
+    promise = @$http(req).success((response) =>
+      deferred = @$q.defer()
+      if response.access_token?
+        configUpdater = (config) =>
+          config.params = config.params or {}
+          config.params.access_token = response.access_token
 
-    if ionic.Platform.isWebView()
-      # If running in a WebView (i.e. on a mobile device/simulator)
-      console.log '>> adding EventListener loadstart'
-      @loginWindow.addEventListener 'loadstart', (event) =>
-        console.log 'event.url', event.url
-        if event.url.indexOf(@AUTH_REDIRECT_URL) == 0
-          accessToken = @getVariableFromHash event.url, 'access_token'
-          console.log 'accessToken: ' + accessToken
-          @localStorageService.set 'accessToken', accessToken
-          @loginWindow.close()
+          config
 
-          if @isLoggedIn()
-            @authService.loginConfirmed null, configUpdater
-        return
-      console.log '<< adding EventListener loadstart'
-    else
-      # if running on a desktop browser, use this hack
-      intervalCount = 0
-      timesToRepeat = 100
-      intervalDelay = 3000
+        @localStorageService.set 'accessToken', response.access_token
+        @authService.loginConfirmed null, configUpdater
 
-      loginPoller = =>
-        intervalCount++
-        if @isLoggedIn()
-          console.log 'user is logged in now'
-          @$interval.cancel promise
-          @authService.loginConfirmed null, configUpdater
-        else
-          console.log 'user not logged in yet, we wont wait forever.  Intervals left:', timesToRepeat - intervalCount
-          if intervalCount >= timesToRepeat
-            @$interval.cancel promise
-            console.log 'Since this is a hack for running the app in the browser, we are now giving up on you logging in.'
-            @loginWindow.close()
-        return
+        deferred.resolve(true)
+      else:
+        deferred.reject('login failed')
 
-      promise = @$interval loginPoller, intervalDelay, timesToRepeat, false
-    return
-
+    ).error((data, status) ->
+      console.log 'add returned status:' + status
+      return
+    )
+    promise
 
   logout: ->
     @localStorageService.remove 'accessToken'

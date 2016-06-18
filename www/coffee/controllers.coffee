@@ -7,11 +7,21 @@ class BaseController
       this[key] = args[index]
     @scope = @$scope if @$scope?
 
+    for key, fn of @constructor.prototype
+      console.log key
+      continue if key in ['constructor', 'initialize'] or key[0] is '_'
+      do (key) =>
+        fn = fn.bind?(this) || _.bind(fn, this) if typeof fn is 'function'
+        Object.defineProperty this, key,
+          get: -> @scope[key]
+          set: (v) -> @scope[key] = v
+        @scope[key] = fn
+
     @initialize?.call(this)
 
 
 class AppCtrl extends BaseController
-  @inject '$scope', '$ionicHistory', '$state', '$ionicModal', '$timeout', 'TodoApiService'
+  @inject '$scope', '$rootScope', '$ionicHistory', '$state', '$ionicModal', '$timeout', 'TodoApiService'
 
   initialize: ->
     # With the new view caching in Ionic, Controllers are only called
@@ -23,46 +33,48 @@ class AppCtrl extends BaseController
 
     # Form data for the login modal
     @$scope.loginData = {}
-    # Create the login modal that we will use later
 
+    # Create the login modal that we will use later
     @$ionicModal.fromTemplateUrl('templates/login.html', scope: @$scope).then (modal) =>
       @$scope.modal = modal
       return
 
-    # Triggered in the login modal to close it
-    @$scope.closeLogin = =>
-      @$scope.modal.hide()
-      return
-
-    # Open the login modal
-    @$scope.login = =>
-      @$scope.modal.show()
-      return
-
-    # Perform the login action when the user submits the login form
-    @$scope.doLogin = =>
-      console.log 'Doing login', @$scope.loginData
-      # Simulate a login delay. Remove this and replace with your login
-      # code if using a login system
-      @$timeout (=>
-        @$scope.closeLogin()
-        return
-      ), 1000
-      return
+    @$rootScope.$on('showLoginModal', =>
+      @login()
+    )
 
     return
 
-  login: ->
-#    alert 'login()'
-    @TodoApiService.login()
+  closeLogin: ->
+    @$scope.modal.hide()
+    return
 
-  logout: ->
-    @TodoApiService.logout()
-    @$ionicHistory.nextViewOptions disableBack: true
-    @$state.go 'app.about'
+  login: ->
+    @$scope.modal.show()
+    return
+
+  doLogin: ->
+    username = @$scope.loginData.username
+    password = @$scope.loginData.password
+
+    @TodoApiService.login(username, password)
+      .success((response) =>
+        console.log 'callback', response
+        @$timeout (=>
+          @$scope.closeLogin()
+          return
+        ), 1000
+      )
+      .error((result) ->
+        alert result
+      )
+    return
 
   isLoggedIn: ->
     @TodoApiService.isLoggedIn()
+
+  logout: ->
+    @TodoApiService.logout()
 
 
 class TodoCtrl extends BaseController
