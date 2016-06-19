@@ -11,7 +11,10 @@ angular.module 'starter'
       $injector.get('$ionicLoading').show()
 
       TodoApiService = $injector.get 'TodoApiService'
-      if TodoApiService.isLoggedIn() and config.url.indexOf(TodoApiService.getEndpoint()) == 0
+      if (TodoApiService.isLoggedIn() and
+          config.url.indexOf(TodoApiService.getEndpoint()) == 0 and
+          config.url.indexOf('/oauth/token') == -1
+      )
         config.params = config.params || {}
         config.params.access_token = TodoApiService.getAccessToken()
 

@@ -64,6 +64,7 @@ class TodoApiService extends BaseService
           config
 
         @localStorageService.set 'accessToken', response.access_token
+        @localStorageService.set 'refreshToken', response.refresh_token
         @authService.loginConfirmed null, configUpdater
 
         deferred.resolve(true)
@@ -76,11 +77,59 @@ class TodoApiService extends BaseService
     )
     promise
 
+  getAccessTokenWithRefreshToken: ->
+    console.log 'getAccesTokenWithRefreshToken ...'
+    deferred = @$q.defer()
+
+    refreshToken = @getRefreshToken()
+    if not refreshToken
+      console.log 'no refresh_token'
+      deferred.reject()
+    else
+      if false and @localStorageService.get 'refreshed'
+        deferred.reject()
+      else
+        LOGIN_URL = @API_ENDPOINT + '/oauth/token'
+        params =
+          grant_type: 'refresh_token'
+          client_id: 'ionic'
+          client_secret: 'secret'
+          refresh_token: refreshToken
+
+        req =
+          method: 'POST'
+          url: LOGIN_URL
+          headers: 'Content-Type': 'application/x-www-form-urlencoded'
+          data: @$httpParamSerializer(params)
+
+        promise = @$http(req).success((response) =>
+          if response.access_token?
+            configUpdater = (config) =>
+              config.params = config.params or {}
+              config.params.access_token = response.access_token
+
+              config
+
+            @localStorageService.set 'accessToken', response.access_token
+            @localStorageService.set 'refreshToken', response.refresh_token
+            @localStorageService.set 'refreshed', true
+            @authService.loginConfirmed null, configUpdater
+
+            deferred.resolve()
+          else:
+            deferred.reject('login failed')
+        )
+
+    return deferred.promise
+
   logout: ->
     @localStorageService.remove 'accessToken'
 
   getAccessToken: ->
     @localStorageService.get 'accessToken'
+
+  getRefreshToken: ->
+    @localStorageService.get 'refreshToken'
 
   isLoggedIn: ->
     !! @getAccessToken()

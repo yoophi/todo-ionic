@@ -100,6 +100,7 @@ TodoApiService = (function(superClass) {
             return config;
           };
           _this.localStorageService.set('accessToken', response.access_token);
+          _this.localStorageService.set('refreshToken', response.refresh_token);
           _this.authService.loginConfirmed(null, configUpdater);
           deferred.resolve(true);
         }
@@ -113,12 +114,68 @@ TodoApiService = (function(superClass) {
     return promise;
   };
 
+  TodoApiService.prototype.getAccessTokenWithRefreshToken = function() {
+    var LOGIN_URL, deferred, params, promise, refreshToken, req;
+    console.log('getAccesTokenWithRefreshToken ...');
+    deferred = this.$q.defer();
+    refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      console.log('no refresh_token');
+      deferred.reject();
+    } else {
+      if (false && this.localStorageService.get('refreshed')) {
+        deferred.reject();
+      } else {
+        LOGIN_URL = this.API_ENDPOINT + '/oauth/token';
+        params = {
+          grant_type: 'refresh_token',
+          client_id: 'ionic',
+          client_secret: 'secret',
+          refresh_token: refreshToken
+        };
+        req = {
+          method: 'POST',
+          url: LOGIN_URL,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          data: this.$httpParamSerializer(params)
+        };
+        promise = this.$http(req).success((function(_this) {
+          return function(response) {
+            var configUpdater;
+            if (response.access_token != null) {
+              configUpdater = function(config) {
+                config.params = config.params || {};
+                config.params.access_token = response.access_token;
+                return config;
+              };
+              _this.localStorageService.set('accessToken', response.access_token);
+              _this.localStorageService.set('refreshToken', response.refresh_token);
+              _this.localStorageService.set('refreshed', true);
+              _this.authService.loginConfirmed(null, configUpdater);
+              deferred.resolve();
+            }
+            return {
+              "else": deferred.reject('login failed')
+            };
+          };
+        })(this));
+      }
+    }
+    return deferred.promise;
+  };
+
   TodoApiService.prototype.logout = function() {
     return this.localStorageService.remove('accessToken');
   };
 
   TodoApiService.prototype.getAccessToken = function() {
     return this.localStorageService.get('accessToken');
+  };
+
+  TodoApiService.prototype.getRefreshToken = function() {
+    return this.localStorageService.get('refreshToken');
   };
 
   TodoApiService.prototype.isLoggedIn = function() {

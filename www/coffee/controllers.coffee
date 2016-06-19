@@ -42,6 +42,17 @@ class AppCtrl extends BaseController
     @$rootScope.$on('showLoginModal', =>
       @login()
     )
+    @$rootScope.$on('event:auth-loginRequired', =>
+      console.log 'callback for ', 'event:auth-loginRequired'
+      success_cb = ->
+        console.log 'success'
+
+      error_cb = =>
+        console.log 'error'
+        @login()
+
+      @TodoApiService.getAccessTokenWithRefreshToken(success_cb, error_cb)
+    )
 
     return
 

@@ -79,6 +79,20 @@ AppCtrl = (function(superClass) {
         return _this.login();
       };
     })(this));
+    this.$rootScope.$on('event:auth-loginRequired', (function(_this) {
+      return function() {
+        var error_cb, success_cb;
+        console.log('callback for ', 'event:auth-loginRequired');
+        success_cb = function() {
+          return console.log('success');
+        };
+        error_cb = function() {
+          console.log('error');
+          return _this.login();
+        };
+        return _this.TodoApiService.getAccessTokenWithRefreshToken(success_cb, error_cb);
+      };
+    })(this));
   };
 
   AppCtrl.prototype.closeLogin = function() {
