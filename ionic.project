@@ -1,6 +1,6 @@
 {
   "name": "todo-ionic",
-  "app_id": "",
+  "app_id": "6aafddfb",
   "proxies": [
     {
       "path": "/todo/api",
