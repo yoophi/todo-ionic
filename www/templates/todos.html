@@ -8,15 +8,13 @@
     </ion-nav-buttons>
   </ion-nav-bar>
   <ion-content>
-    <h1>Todos</h1>
     <ion-list>
       <ion-item
         class="item-remove-animate item-avatar item-icon-right"
         type="item-text-wrap"
         ng-repeat="todo in todos.todos"
         ui-sref="app.todo({todoId: todo.id})">
-
-        <p ng-style="todo.is_completed && { 'text-decoration': 'line-through'}">{{ todo.title }}</p>
+        <div ng-style="todo.is_completed && { 'text-decoration': 'line-through'}">{{ todo.title }}</div>
         <i class="icon ion-chevron-right icon-accessory"></i>
         <ion-option-button class="button-balanced" ng-click="todos.done(todo.id)">
           Done
